@@ -24,6 +24,9 @@ class User extends Authenticatable
         'password',  
         'merchant_id', // ✅ this must be here!
         'is_approved',
+        'company_name', 
+        'address',
+        "pospin"
     ];
 
     /**
@@ -48,4 +51,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+        // In User.php
+    public function categories() {
+        return $this->hasMany(Category::class, 'merchant_id');
+    }
+
 }

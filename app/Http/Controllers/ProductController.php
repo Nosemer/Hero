@@ -13,22 +13,34 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
 {
+   public function index(Request $request)
+{
+    $merchantId = auth()->user()->merchant_id ?? auth()->id();
 
-    public function index()
-    {
-        $merchantId = auth()->user()->merchant_id ?? auth()->id();
-        $products = Product::with('category')
-            ->where('merchant_id', $merchantId)
-            ->get();
+    $search = $request->input('search');
 
-        $categories = Category::where('merchant_id', $merchantId)->get(); // ← this must exist
+    $query = Product::with('category')
+        ->where('merchant_id', $merchantId);
 
-        return Inertia::render('Merchant/Products', [
-            'products' => $products,
-            'categories' => $categories,
-        ]);
+    if (!empty($search)) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('barcode', 'like', "%{$search}%")
+              ->orWhere('price', 'like', "%{$search}%");
+        });
     }
 
+    $products = $query->paginate(10)->withQueryString();
+
+    $categories = Category::where('merchant_id', $merchantId)->get();
+
+    return Inertia::render('Merchant/Products', [
+        'products' => $products,
+        'categories' => $categories,
+        'filters' => $request->only('search'),
+    ]);
+}
 
     public function store(Request $request)
     {

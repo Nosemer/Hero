@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('is_approved')->default(false);
-                $table->unsignedBigInteger('merchant_id')->nullable()->after('id');
+            $table->string('pospin')->nullable();
+            $table->string('company_name')->nullable();
+            $table->text('address')->nullable();
+            $table->unsignedBigInteger('merchant_id')->nullable()->after('id');
             $table->foreign('merchant_id')->references('id')->on('users')->onDelete('cascade');
-            $table->enum('merchant_type', ['restaurant', 'supermarket'])->default('supermarket');
         });
     }
 
@@ -26,7 +28,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->dropColumn('is_approved');
+            $table->dropColumn('pospin');
+            $table->dropColumn('company_name');
+            $table->dropColumn('address');
+            $table->dropColumn('merchant_id');
         });
     }
 };
